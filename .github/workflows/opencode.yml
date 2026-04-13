@@ -28,6 +28,7 @@ jobs:
       - name: Run opencode
         uses: anomalyco/opencode/github@latest
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
-          model: openrouter/z-ai/glm-4.5-air:free
+          model: opencode/minimax-m2.5-free
+          agent: OpenCoder
