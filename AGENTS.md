@@ -1,6 +1,6 @@
 # AGENTS.md
 
-## OpenAgentControl (OAC) Procedure
+## OpenAgentControl (OAC) OpenCoder Agent
 
 Use Github issue as command center
 
@@ -11,7 +11,8 @@ Change approval step to Pull Request let developers to review the plan. Steps to
 1. create branch using `git-branch-pr-workflow` skill
 2. Generate a full plan and save to `./plans` with github Issue number as reference
 3. Add the plan in git, then commit and push to remote
-4. Create PR based on the commit
+4. Create PR based on the commit and add plan in PR description
+5. Do not close the ISSUE in review phase
 
 ### 2 Execute the plan
 
