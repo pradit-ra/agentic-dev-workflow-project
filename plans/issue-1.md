@@ -1,32 +1,43 @@
-# Plan for Issue #1: Create FastAPI for sample project
+# Plan for Issue #1: Caw Say service enhancement
 
 ## Task
-Create REST API using Python FastAPI framework with the following endpoints:
-- `/health` - returns system status (mock value first)
-- `/cow` - returns text based on how a cow says, using `cowsay` library with query param
+Enhance the Cow Say service to persist requests in SQLite database
+
+## Requirements
+1. Persist the request param in database
+2. Use `sqlite` as simple database
+3. Include unit test
 
 ## Tech Stack
 - FastAPI for REST API
+- SQLite with `sqlite3` standard library
 - UV for package management
-- Ruff for linting
+- Ruff for linting and formatting
 
 ## Steps
 
-### 1. Initialize project with UV
-- Set up Python project using UV
-- Add dependencies: fastapi, uvicorn, cowsay
+### 1. Add SQLite dependency
+- Use Python's built-in `sqlite3` (no external dependency needed)
+- Create database schema for storing requests
 
-### 2. Create FastAPI application
-- Create main.py with FastAPI app
-- Implement `/health` endpoint returning mock health status
-- Implement `/cow` endpoint with query parameter using cowsay library
+### 2. Create database module
+- Create `database.py` with SQLite connection
+- Create table `requests` with columns: id (PRIMARY KEY), text (TEXT), created_at (TIMESTAMP)
 
-### 3. Lint and format
+### 3. Update `/cow` endpoint
+- Store request parameter in SQLite database before generating response
+- Return the stored record ID in response
+
+### 4. Add unit test
+- Create `tests/test_main.py` with test for `/cow` endpoint
+- Mock database connection for test
+
+### 5. Lint and format
 - Run ruff to ensure code quality
 
-### 4. Create branch and commit
-- Create feature branch following git-branch-pr-workflow
-- Commit changes using conventional commit
+### 6. Create branch and commit
+- Create branch using git-branch-pr-workflow
+- Commit changes using conventional-commit
 
-### 5. Create PR
+### 7. Create PR
 - Create pull request for user review
