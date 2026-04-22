@@ -1,0 +1,56 @@
+name: OC Plan Merge Kickoff
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  parse:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'oc-plan')
+    runs-on: ubuntu-latest
+    outputs:
+      issue_number: ${{ steps.extract.outputs.issue_number }}
+      correlation_key: ${{ steps.extract.outputs.correlation_key }}
+      pr_number: ${{ github.event.pull_request.number }}
+      pr_url: ${{ github.event.pull_request.html_url }}
+      pr_title: ${{ github.event.pull_request.title }}
+      pr_body: ${{ github.event.pull_request.body }}
+    steps:
+      - name: Extract issue number from plan PR body
+        id: extract
+        uses: actions/github-script@v7.1.0
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const match = body.match(/(?:Issue|Closes):\s*#?(\d+)/i);
+
+            if (!match) {
+              core.setFailed('Plan PR body must include "Issue: #<number>" or "Closes: #<number>".');
+              return;
+            }
+
+            core.setOutput('issue_number', match[1]);
+            core.setOutput('correlation_key', `issue-${match[1]}-plan-pr-${context.payload.pull_request.number}`);
+
+  kickoff:
+    needs: parse
+    uses: ./.github/workflows/oc-dispatch.yml
+    with:
+      mode: kickoff
+      correlation_key: ${{ needs.parse.outputs.correlation_key }}
+      repo: ${{ github.repository }}
+      issue_number: ${{ needs.parse.outputs.issue_number }}
+      issue_url: ${{ format('https://github.com/{0}/issues/{1}', github.repository, needs.parse.outputs.issue_number) }}
+      pr_number: ${{ needs.parse.outputs.pr_number }}
+      pr_url: ${{ needs.parse.outputs.pr_url }}
+      pr_title: ${{ needs.parse.outputs.pr_title }}
+      pr_body: ${{ needs.parse.outputs.pr_body }}
+      plan_file: ${{ format('docs/execution-plan-issue-{0}.md', needs.parse.outputs.issue_number) }}
+    secrets: inherit
+
