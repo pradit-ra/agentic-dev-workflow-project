@@ -1,0 +1,94 @@
+name: OC Issue Intake
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  gate:
+    if: startsWith(github.event.comment.body, '/oc comment')
+    runs-on: ubuntu-latest
+    outputs:
+      should_dispatch: ${{ steps.route.outputs.should_dispatch }}
+      correlation_key: ${{ steps.route.outputs.correlation_key }}
+      issue_number: ${{ steps.route.outputs.issue_number }}
+      issue_comments: ${{ steps.discussion.outputs.issue_comments }}
+    steps:
+      - name: Validate command and readiness
+        id: route
+        uses: actions/github-script@v7.1.0
+        with:
+          script: |
+            const comment = context.payload.comment.body.trim();
+            const issue = context.payload.issue;
+            const commenter = context.payload.comment.author_association;
+            const ready = issue.labels.some((label) => label.name === 'oc-ready');
+
+            if (!['OWNER', 'MEMBER', 'COLLABORATOR'].includes(commenter)) {
+              core.setOutput('should_dispatch', 'false');
+              core.notice('Ignoring /oc comment from non-collaborator.');
+              return;
+            }
+
+            if (!ready) {
+              core.setOutput('should_dispatch', 'false');
+              core.notice('Issue is not labeled oc-ready yet.');
+              return;
+            }
+
+            core.setOutput('should_dispatch', 'true');
+            core.setOutput('issue_number', String(issue.number));
+            core.setOutput('correlation_key', `issue-${issue.number}-comment-${context.payload.comment.id}`);
+
+      - name: Load issue discussion thread
+        id: discussion
+        uses: actions/github-script@v7.1.0
+        with:
+          script: |
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+
+            const thread = comments.map((comment) => {
+              const body = comment.body ? comment.body.trim() : '';
+              return `- ${comment.user.login}: ${body}`;
+            }).join('\n');
+
+            core.setOutput('issue_comments', thread);
+
+      - name: Explain why request was skipped
+        if: steps.route.outputs.should_dispatch != 'true'
+        uses: actions/github-script@v7.1.0
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'OpenAgentControl did not start because this issue is not yet labeled `oc-ready`, or the commenter is not authorized.'
+            })
+
+  dispatch:
+    needs: gate
+    if: needs.gate.outputs.should_dispatch == 'true'
+    uses: ./.github/workflows/oc-dispatch.yml
+    with:
+      mode: plan
+      correlation_key: ${{ needs.gate.outputs.correlation_key }}
+      repo: ${{ github.repository }}
+      issue_number: ${{ needs.gate.outputs.issue_number }}
+      issue_url: ${{ github.event.issue.html_url }}
+      issue_title: ${{ github.event.issue.title }}
+      issue_body: ${{ github.event.issue.body }}
+      issue_comments: ${{ needs.gate.outputs.issue_comments }}
+      commenter: ${{ github.event.comment.user.login }}
+      comment_body: ${{ github.event.comment.body }}
+    secrets: inherit
