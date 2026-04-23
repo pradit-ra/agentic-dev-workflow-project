@@ -169,8 +169,12 @@ jobs:
             printf 'Plan PR body:\n%s\n' "$PR_BODY"
           } >> "$prompt_file"
 
-          echo "prompt=$(cat $prompt_file)" >> "$GITHUB_OUTPUT"
-
+          echo "prompt_file=$prompt_file" >> "$GITHUB_OUTPUT"
+      - name: Read prompt file content
+        shell: bash
+        run: |
+          CONTENT=$(cat "${{ steps.prompt.outputs.prompt_file }}")
+          echo "prompt=$CONTENT" >> $GITHUB_OUTPUT
       - uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
