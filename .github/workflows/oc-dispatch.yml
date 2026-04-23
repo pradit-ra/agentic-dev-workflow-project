@@ -165,7 +165,7 @@ jobs:
             Task mode: kickoff
             
             Goal:
-            - Read the merged execution plan and implement the code changes it describes.
+            - Read the merged execution plan related to the issue number and implement the code changes it describes.
             - Keep the implementation aligned with the approved plan.
             - Run the appropriate project tests and validation commands.
             - Create or update a branch for the code change PR.

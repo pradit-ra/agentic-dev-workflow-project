@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   gate:
-    if: startsWith(github.event.comment.body, '/oc plan') && github.event.issue.pull_request == null
+    if: startsWith(github.event.comment.body, '/oc plan')
     runs-on: ubuntu-latest
     outputs:
       should_dispatch: ${{ steps.route.outputs.should_dispatch }}
