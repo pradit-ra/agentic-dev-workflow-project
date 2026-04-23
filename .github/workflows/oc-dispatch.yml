@@ -192,7 +192,7 @@ jobs:
             printf 'Plan PR body:\n%s\n' "$PR_BODY"
           } >> "$prompt_file"
 
-          echo "prompt_file=$prompt_file"
+          echo "prompt_file=$prompt_file" >> "$GITHUB_OUTPUT"
 
 
       - name: Run OpenCode agent
