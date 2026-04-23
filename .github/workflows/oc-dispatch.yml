@@ -140,11 +140,10 @@ jobs:
           The repository already contains project-specific OAC context in `.opencode/`.
           Use the checked-out workspace directly and keep the work visible in Git history and pull requests.
           Follow the plan-first workflow and stop if required information is still missing.
-          EOF
+EOF
 
           if [ "$MODE" = "plan" ]; then
             cat <<'EOF' >> "$prompt_file"
-            
             Task mode: plan
             
             Goal:
@@ -158,10 +157,9 @@ jobs:
             - Include problem statement, goals, non-goals, risks, implementation steps, validation steps, and rollback notes.
             - Reference the issue number in the PR body.
             - Set plan stage: "in_review"
-            EOF
+EOF
           else
             cat <<'EOF' >> "$prompt_file"
-            
             Task mode: kickoff
             
             Goal:
@@ -175,7 +173,7 @@ jobs:
             - Keep the code PR focused on implementation only.
             - Reference the merged plan PR and the source issue in the PR body.
             - After code PR merges to main: Update the plan file (docs/execution-plan-issue-${ISSUE_NUMBER}.md) to set stage: "done" using a commit to main.
-            EOF
+EOF
           fi
 
           {
