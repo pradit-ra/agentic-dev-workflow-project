@@ -134,46 +134,46 @@ jobs:
         run: |
           set -euo pipefail
           prompt_file="$RUNNER_TEMP/opencode-prompt.md"
-
           cat <<-'EOF' > "$prompt_file"
           You are running inside GitHub Actions for OpenAgentsControl.
+
           The repository already contains project-specific OAC context in `.opencode/`.
           Use the checked-out workspace directly and keep the work visible in Git history and pull requests.
           Follow the plan-first workflow and stop if required information is still missing.
           EOF
 
           if [ "$MODE" = "plan" ]; then
-            cat <<-'EOF' >> "$prompt_file"
-            Task mode: plan
-            
-            Goal:
-            - Summarize the issue discussion and linked subissues into an execution plan.
-            - Write the plan into `docs/execution-plan-issue-${ISSUE_NUMBER}.md`.
-            - Keep this PR docs-only.
-            - Create or update a branch for the plan PR.
-            - Open a pull request labeled `oc-plan`.
-            
-            Output expectations:
-            - Include problem statement, goals, non-goals, risks, implementation steps, validation steps, and rollback notes.
-            - Reference the issue number in the PR body.
-            - Set plan stage: "in_review"
-            EOF
+          cat <<-'EOF' >> "$prompt_file"
+          Task mode: plan
+
+          Goal:
+          - Summarize the issue discussion and linked subissues into an execution plan.
+          - Write the plan into `docs/execution-plan-issue-${ISSUE_NUMBER}.md`.
+          - Keep this PR docs-only.
+          - Create or update a branch for the plan PR.
+          - Open a pull request labeled `oc-plan`.
+
+          Output expectations:
+          - Include problem statement, goals, non-goals, risks, implementation steps, validation steps, and rollback notes.
+          - Reference the issue number in the PR body.
+          - Set plan stage: "in_review"
+          EOF
           else
-            cat <<-'EOF' >> "$prompt_file"
-            Task mode: kickoff
-            
-            Goal:
-            - Read the merged execution plan related to the issue number and implement the code changes it describes.
-            - Keep the implementation aligned with the approved plan.
-            - Run the appropriate project tests and validation commands.
-            - Create or update a branch for the code change PR.
-            - Open a pull request labeled `oc-code`.
-            
-            Output expectations:
-            - Keep the code PR focused on implementation only.
-            - Reference the merged plan PR and the source issue in the PR body.
-            - After code PR merges to main: Update the plan file (docs/execution-plan-issue-${ISSUE_NUMBER}.md) to set stage: "done" using a commit to main.
-            EOF
+          cat <<-'EOF' >> "$prompt_file"
+          Task mode: kickoff
+
+          Goal:
+          - Read the merged execution plan related to the issue number and implement the code changes it describes.
+          - Keep the implementation aligned with the approved plan.
+          - Run the appropriate project tests and validation commands.
+          - Create or update a branch for the code change PR.
+          - Open a pull request labeled `oc-code`.
+
+          Output expectations:
+          - Keep the code PR focused on implementation only.
+          - Reference the merged plan PR and the source issue in the PR body.
+          - After code PR merges to main: Update the plan file (docs/execution-plan-issue-${ISSUE_NUMBER}.md) to set stage: "done" using a commit to main.
+          EOF
           fi
 
           {
@@ -192,7 +192,8 @@ jobs:
             printf 'Plan PR body:\n%s\n' "$PR_BODY"
           } >> "$prompt_file"
 
-          echo "prompt_file=$prompt_file" >> "$GITHUB_OUTPUT"
+          echo "prompt_file=$prompt_file"
+
 
       - name: Run OpenCode agent
         shell: bash
