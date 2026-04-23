@@ -64,11 +64,11 @@ on:
         type: string
         default: ""
 
-permissions:
-  contents: write
-  issues: write
-  pull-requests: write
-  actions: read
+# permissions:
+#   contents: write
+#   issues: write
+#   pull-requests: write
+#   actions: read
 
 concurrency:
   group: oc-${{ inputs.correlation_key }}
@@ -76,7 +76,7 @@ concurrency:
 
 jobs:
   dispatch:
-    runs-on: [self-hosted, linux, x64, oc-runner]
+    runs-on: ubuntu-latest #[self-hosted, linux, x64, oc-runner]
     timeout-minutes: 60
     env:
       GH_TOKEN: ${{ github.token }}
