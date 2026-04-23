@@ -84,17 +84,33 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0
-
-      - name: Verify OpenCode is available
+          fetch-depth: 1
+          persist-credentials: false
+        
+      - name: Get opencode version
+        id: version
         shell: bash
         run: |
-          command -v opencode >/dev/null 2>&1 || {
-            echo "OpenCode is not installed on this runner."
-            exit 1
-          }
+          VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
+          echo "version=${VERSION:-latest}" >> $GITHUB_OUTPUT
+
+      - name: Cache opencode
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.opencode/bin
+          key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
+
+      - name: Install opencode
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Add opencode to PATH
+        shell: bash
+        run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
       - name: Compose OpenCode prompt
         id: prompt
