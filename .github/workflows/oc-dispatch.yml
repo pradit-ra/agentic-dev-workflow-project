@@ -199,13 +199,17 @@ jobs:
         shell: bash
         env:
           MODE: ${{ inputs.mode }}
+          PROMPT_FILE: ${{ steps.prompt.outputs.prompt_file }}
         run: |
           set -euo pipefail
           agent="OpenAgent"
           if [ "$MODE" = "kickoff" ]; then
             agent="OpenCoder"
           fi
-
-          prompt="$(cat "${{ steps.prompt.outputs.prompt_file }}")"
-          opencode --agent "$agent" -c "$GITHUB_WORKSPACE" -p "$prompt" -f json -q \
+          cd "$GITHUB_WORKSPACE"
+          opencode run \
+            --agent "$agent" \
+            --format json \
+            --dangerously-skip-permissions \
+            "$(cat "$RUNNER_TEMP/opencode-prompt.md")" \
             | tee "$RUNNER_TEMP/opencode-output.json"
