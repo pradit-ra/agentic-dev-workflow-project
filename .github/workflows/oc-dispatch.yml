@@ -88,29 +88,6 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-        
-      - name: Get opencode version
-        id: version
-        shell: bash
-        run: |
-          VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
-          echo "version=${VERSION:-latest}" >> $GITHUB_OUTPUT
-
-      - name: Cache opencode
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.opencode/bin
-          key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
-
-      - name: Install opencode
-        if: steps.cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: curl -fsSL https://opencode.ai/install | bash
-
-      - name: Add opencode to PATH
-        shell: bash
-        run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
 
       - name: Compose OpenCode prompt
         id: prompt
@@ -192,24 +169,13 @@ jobs:
             printf 'Plan PR body:\n%s\n' "$PR_BODY"
           } >> "$prompt_file"
 
-          echo "prompt_file=$prompt_file" >> "$GITHUB_OUTPUT"
+          echo "prompt=$(cat $prompt_file)" >> "$GITHUB_OUTPUT"
 
-
-      - name: Run OpenCode agent
-        shell: bash
+      - uses: anomalyco/opencode/github@latest
         env:
-          MODE: ${{ inputs.mode }}
-          PROMPT_FILE: ${{ steps.prompt.outputs.prompt_file }}
-        run: |
-          set -euo pipefail
-          agent="OpenAgent"
-          if [ "$MODE" = "kickoff" ]; then
-            agent="OpenCoder"
-          fi
-          cd "$GITHUB_WORKSPACE"
-          opencode run \
-            --agent "$agent" \
-            --format json \
-            --dangerously-skip-permissions \
-            "$(cat "$RUNNER_TEMP/opencode-prompt.md")" \
-            | tee "$RUNNER_TEMP/opencode-output.json"
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+        with:
+          agent: OpenCoder
+          model: opencode/minimax-m2.5-free
+          prompt: |
+            ${{ steps.prompt.outputs.prompt }}
