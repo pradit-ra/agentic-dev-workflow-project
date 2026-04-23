@@ -170,11 +170,13 @@ jobs:
           } >> "$prompt_file"
 
           echo "prompt_file=$prompt_file" >> "$GITHUB_OUTPUT"
-      - name: Read prompt file content
-        shell: bash
-        run: |
-          CONTENT=$(cat "${{ steps.prompt.outputs.prompt_file }}")
-          echo "prompt=$CONTENT" >> $GITHUB_OUTPUT
+      
+      - name: Read Prompt Content
+        id: prompt
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ${{ steps.prompt.outputs.prompt_file }}
+
       - uses: anomalyco/opencode/github@latest
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
@@ -182,4 +184,4 @@ jobs:
           agent: OpenCoder
           model: opencode/minimax-m2.5-free
           prompt: |
-            ${{ steps.prompt.outputs.prompt }}
+            ${{ steps.prompt.outputs.content }}
