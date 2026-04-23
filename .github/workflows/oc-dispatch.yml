@@ -135,7 +135,7 @@ jobs:
           set -euo pipefail
           prompt_file="$RUNNER_TEMP/opencode-prompt.md"
 
-          cat <<'EOF' > "$prompt_file"
+          cat <<'EOF' >> "$prompt_file"
           You are running inside GitHub Actions for OpenAgentsControl.
           The repository already contains project-specific OAC context in `.opencode/`.
           Use the checked-out workspace directly and keep the work visible in Git history and pull requests.
